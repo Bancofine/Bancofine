@@ -1,2 +1,2 @@
 ### Hi there 👋
-hi my name is DaeWan Kim
+Hi my name is Daewan Kim
