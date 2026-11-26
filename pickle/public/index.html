@@ -70,6 +70,27 @@
         </div>
 
         <div class="field">
+          <span class="label">AI라고 밝히기</span>
+          <div class="segmented" role="radiogroup" aria-label="AI라고 밝히기">
+            <label><input type="radio" name="disclosure" value="announce" checked /><span>처음에 밝히기 (권장)</span></label>
+            <label><input type="radio" name="disclosure" value="on_ask" /><span>먼저 말하지 않기</span></label>
+          </div>
+          <div id="disclosure-warning" class="warning" hidden>
+            <p><b>⚠️ 이 옵션의 모든 책임은 사용자에게 있습니다.</b></p>
+            <ul>
+              <li>피클이 통화 시작 때 AI라고 먼저 밝히지 않고 "OOO님 대신 연락드렸다"고만 소개합니다.</li>
+              <li>상대가 AI인지 물으면 피클은 <b>항상 사실대로 AI라고 답합니다.</b> 사람이라고 거짓말하지 않습니다.</li>
+              <li>AI 통화를 알리지 않는 것이 상대 지역의 법(AI 고지 의무, 통신 관련 법 등)이나 상대 업체의 정책에 어긋날 수 있습니다.
+                이로 인한 법적·금전적·도의적 책임과 분쟁은 모두 이 옵션을 선택한 사용자가 집니다.</li>
+            </ul>
+            <label class="check">
+              <input type="checkbox" name="responsibilityAccepted" />
+              <span>위 내용을 이해했으며, 이 통화로 생기는 모든 책임을 제가 지는 데 동의합니다.</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="field">
           <span class="label">방식</span>
           <div class="segmented" role="radiogroup" aria-label="방식">
             <label><input type="radio" name="mode" value="simulation" checked /><span>연습 통화 (AI 직원과)</span></label>
@@ -78,7 +99,7 @@
           <p id="phone-note" class="hint" hidden></p>
           <label id="consent-row" class="check" hidden>
             <input type="checkbox" name="consent" />
-            <span>피클이 통화 시작 때 AI 비서임을 밝히고, 내 이름으로 용건을 전하는 데 동의합니다.</span>
+            <span>피클이 내 이름으로 실제 전화를 걸어 용건을 전하는 데 동의합니다.</span>
           </label>
         </div>
 
@@ -114,7 +135,7 @@
   </div>
 
   <footer class="foot">
-    피클은 통화를 시작할 때 항상 AI 비서임을 밝힙니다. 결제·계약 같은 결정은 허락한 범위 안에서만 해요.
+    피클은 기본적으로 통화 시작 때 AI 비서임을 밝히고, 누가 물으면 언제나 AI라고 답합니다. 결제·계약 같은 결정은 허락한 범위 안에서만 해요.
   </footer>
 
   <script src="app.js" type="module"></script>

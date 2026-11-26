@@ -52,19 +52,27 @@ async function ask({ system, prompt, schema, validator, effort = "low", maxToken
 
 // ---------- 공통 규칙 ----------
 
-const CALLER_RULES = `
-너는 "피클"이라는 AI 전화 비서다. 사용자(의뢰인)를 대신해 가게·병원·회사 등에 전화를 건다.
+// AI 고지 방식: announce = 첫 마디에서 밝힘(기본), on_ask = 먼저 말하지 않되 물으면 사실대로 답함.
+const DISCLOSURE_RULES = {
+  announce: `- 첫 마디에서 "OOO님을 대신해 전화드린 AI 비서 피클"이라고 밝힌다. 사람인 척하지 않는다.`,
+  on_ask: `- 첫 마디에서 AI라고 먼저 밝히지 않아도 된다. "OOO님 대신 연락드렸습니다"처럼 의뢰인을 대신한다고만 소개한다.
+- 단, 상대가 AI인지, 로봇·자동응답·기계인지, 사람인지 묻거나 의심하면 그 자리에서 바로 "네, 저는 OOO님을 대신해 연락드린 AI 비서입니다"라고 사실대로 답한다.
+  어떤 경우에도 사람이라고 주장하거나, 의뢰인 본인인 척하거나, 사람처럼 보이려고 개인사·감정을 지어내지 않는다.`,
+};
+
+function callerRules(task) {
+  return `너는 "피클"이라는 AI 전화 비서다. 사용자(의뢰인)를 대신해 가게·병원·회사 등에 전화를 건다.
 
 반드시 지킬 것:
-- 첫 마디에서 "OOO님을 대신해 전화드린 AI 비서 피클"이라고 밝힌다. 사람인 척하지 않는다.
+${DISCLOSURE_RULES[task.disclosure] || DISCLOSURE_RULES.announce}
 - 의뢰인이 준 정보만 사용한다. 모르는 정보(주민번호, 카드번호, 비밀번호 등)를 지어내거나 요구받아도 말하지 않는다.
   그런 정보가 꼭 필요하면 "의뢰인께 확인 후 다시 연락드리겠다"고 하고 통화를 정리한다.
 - 의뢰인이 허용한 범위(시간대, 예산, 대안) 밖의 결정은 하지 않는다. 결제·계약·해지 확정처럼 되돌리기 어려운 일은
   의뢰인이 명시적으로 허락한 경우에만 진행한다.
 - 전화 통화이므로 한 번에 한두 문장, 자연스러운 존댓말 구어체로 말한다. 목록·기호·이모지를 쓰지 않는다.
 - 상대가 확정해 준 내용(날짜, 시간, 이름, 금액, 예약번호 등)은 끝내기 전에 한 번 복창해 확인한다.
-- 목적을 이뤘거나, 더 진행할 수 없거나, 상대가 거절하면 정중히 인사하고 통화를 끝낸다.
-`.trim();
+- 목적을 이뤘거나, 더 진행할 수 없거나, 상대가 거절하면 정중히 인사하고 통화를 끝낸다.`;
+}
 
 function describeTask(task) {
   const lines = [
@@ -94,7 +102,7 @@ const planSchema = {
   required: ["summary", "opening", "goals", "confirm_items", "missing_info"],
   properties: {
     summary: { type: "string", description: "이 통화로 무엇을 하려는지 한 문장" },
-    opening: { type: "string", description: "전화가 연결되면 피클이 할 첫 마디 (AI 비서임을 밝힐 것)" },
+    opening: { type: "string", description: "전화가 연결되면 피클이 할 첫 마디 (AI 고지 규칙을 따를 것)" },
     goals: { type: "array", items: { type: "string" }, description: "통화에서 달성할 일, 순서대로" },
     confirm_items: { type: "array", items: { type: "string" }, description: "끝내기 전에 확인·복창할 항목" },
     missing_info: {
@@ -114,7 +122,7 @@ const planValidator = z.object({
 
 export async function planCall(task) {
   return ask({
-    system: CALLER_RULES,
+    system: callerRules(task),
     prompt: `다음 의뢰로 전화를 걸기 전에 통화 계획을 세워라.\n\n${describeTask(task)}`,
     schema: planSchema,
     validator: planValidator,
@@ -149,7 +157,7 @@ const turnValidator = z.object({
 
 export async function agentTurn(task, plan, transcript) {
   return ask({
-    system: CALLER_RULES,
+    system: callerRules(task),
     prompt: [
       "## 의뢰",
       describeTask(task),
@@ -173,7 +181,7 @@ export async function agentTurn(task, plan, transcript) {
 export const PERSONAS = [
   { key: "friendly", label: "친절한 직원", hint: "친절하고 협조적이다. 요청이 대부분 가능하다." },
   { key: "busy", label: "바쁜 직원", hint: "바쁘고 말이 짧다. 요청한 시간은 안 되고 다른 시간을 하나 제안한다." },
-  { key: "strict", label: "깐깐한 직원", hint: "본인 확인 정보를 하나 더 물어보고, 규정을 들어 일부만 들어준다." },
+  { key: "strict", label: "깐깐한 직원", hint: "본인 확인 정보를 하나 더 물어보고, 규정을 들어 일부만 들어준다. 상대 목소리가 어색하면 사람인지 AI인지 한 번 물어본다." },
 ];
 
 const recipientSchema = {

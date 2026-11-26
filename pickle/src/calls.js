@@ -79,11 +79,17 @@ export function normalizeTask(input = {}) {
     callerName: str(input.callerName, 40),
     callerPhone: str(input.callerPhone, 30),
     tone: input.tone === "brief" ? "brief" : "polite",
+    disclosure: input.disclosure === "on_ask" ? "on_ask" : "announce",
+    responsibilityAcceptedAt: null,
   };
   const errors = [];
   if (!task.recipientName) errors.push("전화 받을 곳을 입력해 주세요.");
   if (!task.request) errors.push("요청 내용을 입력해 주세요.");
   if (!task.callerName) errors.push("의뢰인 이름을 입력해 주세요. 피클이 누구를 대신하는지 밝혀야 합니다.");
+  if (task.disclosure === "on_ask") {
+    if (input.responsibilityAccepted === true) task.responsibilityAcceptedAt = new Date().toISOString();
+    else errors.push("'AI라고 먼저 밝히지 않기'를 쓰려면 모든 책임이 사용자에게 있다는 데 동의해야 합니다.");
+  }
   return { task, errors };
 }
 

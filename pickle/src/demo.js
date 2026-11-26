@@ -8,8 +8,11 @@ export async function planCall(task) {
   const who = task.callerName || "고객";
   return {
     summary: `${task.recipientName || "상대방"}에 전화해 '${task.request}' 요청을 처리합니다.`,
-    opening: `안녕하세요, ${who}님을 대신해 전화드린 AI 비서 피클입니다. ${task.request} 관련해서 여쭤보려고 연락드렸어요.`,
-    goals: ["AI 비서임을 밝히고 용건 전달", "가능 여부 확인", "확정 내용 복창 후 마무리"],
+    opening:
+      task.disclosure === "on_ask"
+        ? `안녕하세요, ${who}님 대신 연락드렸습니다. ${task.request} 관련해서 여쭤보려고요.`
+        : `안녕하세요, ${who}님을 대신해 전화드린 AI 비서 피클입니다. ${task.request} 관련해서 여쭤보려고 연락드렸어요.`,
+    goals: [task.disclosure === "on_ask" ? "의뢰인 대신 연락했다고 소개 (물으면 AI라고 답함)" : "AI 비서임을 밝히고 용건 전달", "가능 여부 확인", "확정 내용 복창 후 마무리"],
     confirm_items: ["날짜와 시간", "예약자 이름", "기타 안내 사항"],
     missing_info: task.callerPhone ? [] : ["의뢰인 연락처 (상대가 물어볼 수 있음)"],
   };
@@ -22,9 +25,11 @@ export async function agentTurn(task, plan, transcript) {
   const script = [
     { say: plan.opening, end_call: false, status: "in_progress" },
     {
-      say: task.flexibility
+      say:
+        (task.disclosure === "on_ask" ? `네, 맞아요. 저는 ${who}님을 대신해 연락드린 AI 비서예요. ` : "") +
+        (task.flexibility
         ? `그럼 그 시간으로 부탁드릴게요. ${task.flexibility.slice(0, 40)} 조건이면 괜찮습니다.`
-        : "네, 그럼 말씀하신 대로 진행 부탁드립니다.",
+        : "네, 그럼 말씀하신 대로 진행 부탁드립니다."),
       end_call: false,
       status: "in_progress",
     },
@@ -42,7 +47,13 @@ export async function recipientTurn(task, persona, transcript) {
   await pause(600);
   const theirs = transcript.filter((t) => t.who === "other").length;
   const script = [
-    { say: `네, ${task.recipientName || "가게"}입니다. 아, AI 비서시군요. 말씀하신 시간은 꽉 찼고, 30분 뒤는 가능해요.`, hang_up: false },
+    {
+      say:
+        task.disclosure === "on_ask"
+          ? `네, ${task.recipientName || "가게"}입니다. 근데 혹시 AI세요? 아무튼 말씀하신 시간은 꽉 찼고, 30분 뒤는 가능해요.`
+          : `네, ${task.recipientName || "가게"}입니다. 아, AI 비서시군요. 말씀하신 시간은 꽉 찼고, 30분 뒤는 가능해요.`,
+      hang_up: false,
+    },
     { say: "네 그럼 그렇게 잡아드릴게요. 예약자 성함이랑 연락처 알려주시겠어요?", hang_up: false },
     { say: "네, 등록됐습니다. 10분 이상 늦으시면 자동 취소되니 참고해 주세요.", hang_up: false },
     { say: "네, 감사합니다. 들어가세요.", hang_up: true },

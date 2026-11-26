@@ -45,7 +45,7 @@ app.post("/api/calls", (req, res) => {
     const phone = phoneConfig();
     if (!phone.ready) errors.push(`실제 통화 설정이 없습니다: ${phone.missing.join(", ")}`);
     if (!task.phone) errors.push("실제 통화에는 전화번호가 필요합니다.");
-    if (req.body?.consent !== true) errors.push("상대방에게 AI가 전화한다는 점을 알리는 데 동의해 주세요.");
+    if (req.body?.consent !== true) errors.push("피클이 내 이름으로 실제 전화를 거는 데 동의해 주세요.");
   }
   if (errors.length) return res.status(400).json({ errors });
 

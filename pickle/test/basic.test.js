@@ -36,3 +36,23 @@ test("demo simulation runs to a result", async () => {
   assert.match(done.transcript[0].text, /AI 비서/);
   assert.equal(done.result.outcome, "success");
 });
+
+test("on_ask disclosure requires accepting responsibility", () => {
+  const base = { recipientName: "가게", request: "예약", callerName: "홍길동", disclosure: "on_ask" };
+  assert.equal(normalizeTask(base).errors.length, 1);
+  const ok = normalizeTask({ ...base, responsibilityAccepted: true });
+  assert.deepEqual(ok.errors, []);
+  assert.equal(ok.task.disclosure, "on_ask");
+  assert.ok(ok.task.responsibilityAcceptedAt);
+  assert.equal(normalizeTask({ ...base, disclosure: "weird" }).task.disclosure, "announce");
+});
+
+test("on_ask demo does not announce first but admits being AI when asked", async () => {
+  const { task } = normalizeTask({ recipientName: "파스타집", request: "토요일 7시 4명", callerName: "홍길동", disclosure: "on_ask", responsibilityAccepted: true });
+  const call = createCall(task, "simulation");
+  await runSimulation(call);
+  const t = getCall(call.id).transcript;
+  assert.doesNotMatch(t[0].text, /AI/);
+  assert.match(t[1].text, /AI/);
+  assert.match(t[2].text, /AI 비서/);
+});

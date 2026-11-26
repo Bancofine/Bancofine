@@ -47,16 +47,21 @@ function updateModeUI() {
     note.textContent = `실제 통화를 하려면 서버 설정이 필요해요: ${status.phoneMissing.join(", ")} (README 참고)`;
   }
 }
+function updateDisclosureUI() {
+  $("#disclosure-warning").hidden = form.disclosure.value !== "on_ask";
+}
 form.addEventListener("change", (e) => {
   if (e.target.name === "mode") updateModeUI();
+  if (e.target.name === "disclosure") updateDisclosureUI();
 });
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const data = new FormData(form);
   const task = Object.fromEntries(
-    ["recipientName", "phone", "purpose", "request", "flexibility", "callerName", "callerPhone", "tone"].map((k) => [k, data.get(k) || ""])
+    ["recipientName", "phone", "purpose", "request", "flexibility", "callerName", "callerPhone", "tone", "disclosure"].map((k) => [k, data.get(k) || ""])
   );
+  task.responsibilityAccepted = data.get("responsibilityAccepted") === "on";
   const body = { task, mode: data.get("mode"), consent: data.get("consent") === "on" };
 
   const errorsBox = $("#form-errors");
@@ -107,6 +112,9 @@ function render(call) {
       el("b", { textContent: "📝 " + call.plan.summary }),
       el("ul", {}, ...call.plan.goals.map((g) => el("li", { textContent: g }))),
       call.persona ? el("div", { textContent: `상대 역할: ${call.persona}` }) : null,
+      call.task.disclosure === "on_ask"
+        ? el("span", { className: "tag", textContent: "AI 먼저 밝히지 않음 · 물으면 답함 · 책임: 사용자" })
+        : null,
       call.plan.missing_info.length
         ? el("div", { className: "warn", textContent: "미리 알려주면 좋은 정보: " + call.plan.missing_info.join(", ") })
         : null
@@ -171,4 +179,5 @@ async function loadHistory() {
 
 await loadStatus();
 updateModeUI();
+updateDisclosureUI();
 loadHistory();
