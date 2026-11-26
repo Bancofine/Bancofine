@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>피클 — 전화 대신 걸어드려요</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥒</text></svg>" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">🥒</span>
+      <div>
+        <h1>피클</h1>
+        <p>귀찮은 전화, 피클이 대신 걸어드려요</p>
+      </div>
+    </div>
+    <div id="engine" class="engine" aria-live="polite"></div>
+  </header>
+
+  <main class="layout">
+    <section class="card" aria-labelledby="form-title">
+      <h2 id="form-title">어디에 전화할까요?</h2>
+      <form id="call-form" novalidate>
+        <div class="field">
+          <span class="label">용건</span>
+          <div id="purposes" class="chips" role="radiogroup" aria-label="용건"></div>
+        </div>
+
+        <div class="row">
+          <label class="field">
+            <span class="label">전화 받을 곳</span>
+            <input name="recipientName" placeholder="예: 연남동 파스타집" required />
+          </label>
+          <label class="field">
+            <span class="label">전화번호 <em>(실제 통화 시 필요)</em></span>
+            <input name="phone" inputmode="tel" placeholder="02-123-4567" />
+          </label>
+        </div>
+
+        <label class="field">
+          <span class="label">무엇을 부탁할까요?</span>
+          <textarea name="request" rows="3" required placeholder="예: 이번 주 토요일 저녁 7시에 4명 예약해 주세요. 창가 자리면 좋겠어요."></textarea>
+        </label>
+
+        <label class="field">
+          <span class="label">이 정도까지는 괜찮아요 <em>(선택)</em></span>
+          <textarea name="flexibility" rows="2" placeholder="예: 6시 30분~8시 사이면 OK. 안 되면 일요일도 괜찮아요. 예약금은 받지 말고 확인만."></textarea>
+        </label>
+
+        <div class="row">
+          <label class="field">
+            <span class="label">내 이름</span>
+            <input name="callerName" placeholder="홍길동" required autocomplete="name" />
+          </label>
+          <label class="field">
+            <span class="label">내 연락처 <em>(상대가 물을 때만 알려줘요)</em></span>
+            <input name="callerPhone" inputmode="tel" placeholder="010-0000-0000" autocomplete="tel" />
+          </label>
+        </div>
+
+        <div class="field">
+          <span class="label">말투</span>
+          <div class="segmented" role="radiogroup" aria-label="말투">
+            <label><input type="radio" name="tone" value="polite" checked /><span>공손하게</span></label>
+            <label><input type="radio" name="tone" value="brief" /><span>간결하게</span></label>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="label">방식</span>
+          <div class="segmented" role="radiogroup" aria-label="방식">
+            <label><input type="radio" name="mode" value="simulation" checked /><span>연습 통화 (AI 직원과)</span></label>
+            <label><input type="radio" name="mode" value="phone" /><span>실제로 전화 걸기</span></label>
+          </div>
+          <p id="phone-note" class="hint" hidden></p>
+          <label id="consent-row" class="check" hidden>
+            <input type="checkbox" name="consent" />
+            <span>피클이 통화 시작 때 AI 비서임을 밝히고, 내 이름으로 용건을 전하는 데 동의합니다.</span>
+          </label>
+        </div>
+
+        <div id="form-errors" class="errors" role="alert" hidden></div>
+        <button type="submit" class="primary" id="submit">
+          <span aria-hidden="true">📞</span> 피클, 전화 부탁해
+        </button>
+      </form>
+    </section>
+
+    <section class="card live" aria-labelledby="live-title">
+      <div class="live-head">
+        <h2 id="live-title">통화</h2>
+        <span id="state" class="state idle">대기 중</span>
+      </div>
+
+      <div id="empty" class="empty">
+        <div class="empty-art" aria-hidden="true">🥒☎️</div>
+        <p>왼쪽에 용건을 적으면<br />피클이 대신 통화하고 결과를 정리해 드려요.</p>
+      </div>
+
+      <div id="plan" class="plan" hidden></div>
+      <ol id="transcript" class="transcript" aria-live="polite"></ol>
+      <div id="result" class="result" hidden></div>
+    </section>
+  </main>
+
+  <div class="wrap">
+  <section class="card" aria-labelledby="history-title">
+    <h2 id="history-title">지난 통화</h2>
+    <ul id="history" class="history-list"></ul>
+  </section>
+  </div>
+
+  <footer class="foot">
+    피클은 통화를 시작할 때 항상 AI 비서임을 밝힙니다. 결제·계약 같은 결정은 허락한 범위 안에서만 해요.
+  </footer>
+
+  <script src="app.js" type="module"></script>
+</body>
+</html>
